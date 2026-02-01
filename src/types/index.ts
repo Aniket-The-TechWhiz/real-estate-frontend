@@ -17,7 +17,14 @@ export interface Project {
 export interface Property {
   _id: string;
   title: string;
-  images: string[];
+  images: Array<
+    | string
+    | {
+        data?: { type?: string; data?: number[] } | Buffer;
+        contentType?: string;
+        filename?: string;
+      }
+  >;
   category: string;
   listingType: 'Rent' | 'Sale';
   price: number;

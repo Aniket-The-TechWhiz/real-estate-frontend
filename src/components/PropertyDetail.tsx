@@ -17,13 +17,59 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
   const maxThumbnails = 3;
   const remainingImages = property.images.length - maxThumbnails;
   const displayedThumbnails = property.images.slice(0, maxThumbnails);
+  if (!Array.isArray(property.images) || property.images.length === 0) {
+    console.error('PropertyDetail: no images provided', { propertyId: property._id, images: property.images });
+  }
 
   // Get the image URL and prepend base URL if it's a relative path
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
+  type ImageLike = string | { data?: { type?: string; data?: number[] } | Buffer; contentType?: string };
+
+  const toBase64 = (bytes: number[]) => {
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
     }
-    return `${API_BASE_URL.replace('/api', '')}/${imagePath}`;
+    return btoa(binary);
+  };
+
+  const toDataUri = (image: ImageLike): string => {
+    if (typeof image === 'string') return image;
+    if (!image || !image.data || !image.contentType) {
+      console.error('Image normalization failed: missing data/contentType', image);
+      return '';
+    }
+    const data = (image.data as any).data || image.data;
+    if (!Array.isArray(data)) {
+      console.error('Image normalization failed: data is not array', image);
+      return '';
+    }
+    try {
+      const base64 = toBase64(data);
+      return `data:${image.contentType};base64,${base64}`;
+    } catch (error) {
+      console.error('Image normalization failed: base64 conversion error', error, image);
+      return '';
+    }
+  };
+
+  const getImageUrl = (imagePath: ImageLike) => {
+    if (!imagePath) return '';
+    const normalized = toDataUri(imagePath);
+    if (!normalized) {
+      console.error('Image URL generation failed: normalized empty', imagePath);
+      return '';
+    }
+    if (normalized.startsWith('data:')) {
+      return normalized;
+    }
+    if (normalized.startsWith('http')) {
+      return normalized;
+    }
+    // Images are served at /uploads, not /api
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    return `${baseUrl}/${normalized}`;
   };
 
   const isFurnished = property.furnishing === 'Furnished' || property.furnishing === 'Fully Furnished';

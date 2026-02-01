@@ -9,16 +9,63 @@ interface PropertyCardProps {
   onClick: () => void;
 }
 
+type ImageLike = string | { data?: { type?: string; data?: number[] } | Buffer; contentType?: string };
+
+const toBase64 = (bytes: number[]) => {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+};
+
+const toDataUri = (image: ImageLike): string => {
+  if (typeof image === 'string') return image;
+  if (!image || !image.data || !image.contentType) {
+    console.error('Image normalization failed: missing data/contentType', image);
+    return '';
+  }
+  const data = (image.data as any).data || image.data;
+  if (!Array.isArray(data)) {
+    console.error('Image normalization failed: data is not array', image);
+    return '';
+  }
+  try {
+    const base64 = toBase64(data);
+    return `data:${image.contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('Image normalization failed: base64 conversion error', error, image);
+    return '';
+  }
+};
+
 export function PropertyCard({ property, onClick }: PropertyCardProps) {
   // Get the first image URL and prepend base URL if it's a relative path
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
+  const getImageUrl = (imagePath: ImageLike) => {
+    if (!imagePath) return '';
+    const normalized = toDataUri(imagePath);
+    if (!normalized) {
+      console.error('Image URL generation failed: normalized empty', imagePath);
+      return '';
     }
-    return `${API_BASE_URL.replace('/api', '')}/${imagePath}`;
+    if (normalized.startsWith('data:')) {
+      return normalized;
+    }
+    if (normalized.startsWith('http')) {
+      return normalized;
+    }
+    // Images are served at /uploads, not /api
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    return `${baseUrl}/${normalized}`;
   };
 
   const isFurnished = property.furnishing === 'Furnished' || property.furnishing === 'Fully Furnished';
+  const firstImage = Array.isArray(property.images) ? (property.images[0] as ImageLike) : '';
+  if (!firstImage) {
+    console.error('PropertyCard: missing first image', { propertyId: property._id, images: property.images });
+  }
 
   return (
     <motion.div 
@@ -31,7 +78,7 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
     >
       <div className="relative h-56 overflow-hidden">
         <ImageWithFallback
-          src={getImageUrl(property.images[0])}
+          src={getImageUrl(firstImage)}
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
