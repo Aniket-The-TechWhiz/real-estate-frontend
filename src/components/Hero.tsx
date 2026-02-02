@@ -3,9 +3,10 @@ import { ArrowRight, Home, TrendingUp } from 'lucide-react';
 
 interface HeroProps {
   onNavigate: (view: 'rent' | 'resale') => void;
+  currentView: 'rent' | 'resale';
 }
 
-export function Hero({ onNavigate }: HeroProps) {
+export function Hero({ onNavigate, currentView }: HeroProps) {
   const scrollToProperties = () => {
     const propertiesSection = document.getElementById('properties-section');
     if (propertiesSection) {
@@ -98,7 +99,11 @@ export function Hero({ onNavigate }: HeroProps) {
           >
             <motion.button
               onClick={handleRentClick}
-              className="group flex items-center gap-3 bg-white text-blue-700 px-8 py-4 rounded-full hover:shadow-2xl transition-all duration-300"
+              className={`group flex items-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ${
+                currentView === 'rent'
+                  ? 'bg-white text-blue-700 shadow-2xl'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl'
+              }`}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -109,7 +114,11 @@ export function Hero({ onNavigate }: HeroProps) {
 
             <motion.button
               onClick={handleResaleClick}
-              className="group flex items-center gap-3 bg-white/10 backdrop-blur-sm text-white border-2 border-white/50 px-8 py-4 rounded-full hover:bg-white/20 hover:border-white transition-all duration-300"
+              className={`group flex items-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ${
+                currentView === 'resale'
+                  ? 'bg-white text-blue-700 shadow-2xl'
+                  : 'bg-white/10 backdrop-blur-sm text-white border-2 border-white/50 hover:bg-white/20 hover:border-white'
+              }`}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
