@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Filter, X } from 'lucide-react';
-import { RangeSlider } from './RangeSlider';
 
 export interface PropertyFilters {
   propertyType: string;
@@ -17,10 +16,6 @@ interface PropertyFiltersProps {
 
 export function PropertyFiltersComponent({ filters, onFilterChange, isRental }: PropertyFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [budgetRange, setBudgetRange] = useState<{ min: number; max: number }>({
-    min: isRental ? 0 : 0,
-    max: isRental ? 6000 : 5000000
-  });
 
   const propertyTypes = [
     'All Types',
@@ -45,36 +40,7 @@ export function PropertyFiltersComponent({ filters, onFilterChange, isRental }: 
     'Unfurnished'
   ];
 
-  // Budget range configuration
-  const budgetConfig = isRental 
-    ? { min: 0, max: 10000, step: 100 }
-    : { min: 0, max: 5000000, step: 50000 };
-
-  const formatBudget = (value: number) => {
-    if (isRental) {
-      return `$${(value / 1000).toFixed(1)}k`;
-    } else {
-      if (value >= 1000000) {
-        return `$${(value / 1000000).toFixed(1)}M`;
-      }
-      return `$${(value / 1000).toFixed(0)}k`;
-    }
-  };
-
-  const handleBudgetChange = (min: number, max: number) => {
-    setBudgetRange({ min, max });
-    onFilterChange({
-      ...filters,
-      minBudget: min.toString(),
-      maxBudget: max.toString()
-    });
-  };
-
   const handleReset = () => {
-    setBudgetRange({
-      min: budgetConfig.min,
-      max: budgetConfig.max
-    });
     onFilterChange({
       propertyType: 'All Types',
       furnishingStatus: 'All Statuses',
@@ -153,23 +119,6 @@ export function PropertyFiltersComponent({ filters, onFilterChange, isRental }: 
               </select>
             </div>
 
-            {/* Budget Range Slider */}
-            <div>
-              <label className="block text-sm mb-2 text-gray-700">
-                Budget Range: {formatBudget(budgetRange.min)} - {formatBudget(budgetRange.max)}
-              </label>
-              <div className="max-w-md">
-                <RangeSlider
-                  min={budgetConfig.min}
-                  max={budgetConfig.max}
-                  minValue={budgetRange.min}
-                  maxValue={budgetRange.max}
-                  step={budgetConfig.step}
-                  onChange={handleBudgetChange}
-                  formatLabel={formatBudget}
-                />
-              </div>
-            </div>
           </div>
 
           {hasActiveFilters && (

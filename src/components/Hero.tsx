@@ -74,9 +74,9 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl mb-6 leading-tight">
-              Building Tomorrow's
+              Where Luxury Meets
               <br />
-              <span className="text-blue-200">Landmarks</span>
+              <span className="text-blue-200">Smart Investment</span>
             </h2>
           </motion.div>
 
@@ -87,7 +87,7 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg sm:text-xl text-blue-100 mb-10 leading-relaxed max-w-xl"
           >
-            Your trusted partner in premium property solutions. We offer exceptional rental properties and exclusive resale opportunities tailored to your investment goals.
+            Your trusted partner for quality rental homes and resale properties. We provide well-curated options to match your needs, whether you’re looking to rent, buy, or invest in the right property.
           </motion.p>
 
           {/* CTA Buttons */}

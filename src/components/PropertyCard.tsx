@@ -61,7 +61,7 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
     return `${baseUrl}/${normalized}`;
   };
 
-  const isFurnished = property.furnishing === 'Furnished' || property.furnishing === 'Fully Furnished';
+  const isHot = property.isHot === true;
   const firstImage = Array.isArray(property.images) ? (property.images[0] as ImageLike) : '';
   if (!firstImage) {
     console.error('PropertyCard: missing first image', { propertyId: property._id, images: property.images });
@@ -83,11 +83,18 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         
-        {isFurnished && (
-          <div className="absolute top-4 right-4 px-3 py-1 bg-blue-600 text-white rounded-full text-xs shadow-lg">
-            {property.furnishing}
-          </div>
-        )}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          {isHot && (
+            <div className="px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-lg font-semibold">
+              Hot Deal
+            </div>
+          )}
+          {property.furnishing && (
+            <div className="px-3 py-1 bg-blue-600 text-white rounded-full text-xs shadow-lg">
+              {property.furnishing}
+            </div>
+          )}
+        </div>
 
         {property.status !== 'Available' && (
           <div className="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-lg">

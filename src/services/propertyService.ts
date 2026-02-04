@@ -48,6 +48,8 @@ export interface Property {
   furnishing: string;
   location: string;
   status: 'Available' | 'Rented' | 'Sold';
+  featureType?: string;
+  isHot?: boolean;
   createdAt: string;
   updatedAt: string;
 }
