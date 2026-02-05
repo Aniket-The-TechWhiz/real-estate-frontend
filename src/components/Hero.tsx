@@ -26,6 +26,17 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
 
   return (
     <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white overflow-hidden">
+      {/* Residential Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop")'
+        }}
+      />
+      
+      {/* Dark Overlay for Better Text Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-blue-800/50 to-blue-900/60" />
+      
       {/* Soft Geometric Background Elements */}
       <div className="absolute inset-0 overflow-hidden opacity-10">
         <motion.div
@@ -73,10 +84,10 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl mb-6 leading-tight">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl mb-6 leading-tight drop-shadow-lg text-white" style={{ fontFamily: '"Moniline", cursive', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
               Where Luxury Meets
               <br />
-              <span className="text-blue-200">Smart Investment</span>
+              <span className="text-amber-400">Smart Investment</span>
             </h2>
           </motion.div>
 
@@ -85,7 +96,8 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg sm:text-xl text-blue-100 mb-10 leading-relaxed max-w-xl"
+            className="text-lg sm:text-xl text-white mb-10 leading-relaxed max-w-xl"
+            style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }}
           >
             Your trusted partner for quality rental homes and resale properties. We provide well-curated options to match your needs, whether you’re looking to rent, buy, or invest in the right property.
           </motion.p>
@@ -101,8 +113,8 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
               onClick={handleRentClick}
               className={`group flex items-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ${
                 currentView === 'rent'
-                  ? 'bg-white text-blue-700 shadow-2xl'
-                  : 'bg-blue-500 text-white hover:bg-blue-600 hover:shadow-xl'
+                  ? 'bg-blue-600 text-white shadow-2xl'
+                  : 'bg-white text-blue-700 hover:bg-blue-50 hover:shadow-xl'
               }`}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
@@ -116,8 +128,8 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
               onClick={handleResaleClick}
               className={`group flex items-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ${
                 currentView === 'resale'
-                  ? 'bg-white text-blue-700 shadow-2xl'
-                  : 'bg-white/10 backdrop-blur-sm text-white border-2 border-white/50 hover:bg-white/20 hover:border-white'
+                  ? 'bg-blue-600 text-white shadow-2xl'
+                  : 'bg-white text-blue-700 hover:bg-blue-50 hover:shadow-xl'
               }`}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
@@ -133,7 +145,8 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-12 flex flex-wrap items-center gap-8 text-blue-100"
+            className="mt-12 flex flex-wrap items-center gap-8 text-white"
+            style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }}
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
