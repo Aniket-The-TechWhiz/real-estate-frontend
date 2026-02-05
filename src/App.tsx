@@ -12,7 +12,7 @@ import { FAQSection } from './components/FAQSection';
 import { Newsletter } from './components/Newsletter';
 import { propertyService } from './services/propertyService';
 import { Property } from './types';
-import { Loader2 } from 'lucide-react';
+import { LoadingAnimation } from './components/LoadingAnimation';
 
 type ViewType = 'rent' | 'resale';
 
@@ -22,6 +22,7 @@ export default function App() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loadingProperty, setLoadingProperty] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loadingLoginForm, setLoadingLoginForm] = useState(false);
   const [pendingPropertyId, setPendingPropertyId] = useState<string | null>(null);
   const [pendingPropertyTitle, setPendingPropertyTitle] = useState<string>('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -33,8 +34,12 @@ export default function App() {
   };
 
   const handlePropertyClick = async (propertyId: string) => {
-    if (!isLoggedIn) {
+    // Check if user has already filled the form
+    const hasFilledForm = localStorage.getItem('hasFilledPropertyForm') === 'true';
+
+    if (!isLoggedIn && !hasFilledForm) {
       // Fetch property title before showing modal
+      setLoadingLoginForm(true);
       try {
         const response = await propertyService.getPropertyById(propertyId);
         setPendingPropertyTitle(response.data.title);
@@ -43,8 +48,11 @@ export default function App() {
       } catch (error) {
         console.error('Error fetching property:', error);
         alert('Failed to load property. Please try again.');
+      } finally {
+        setLoadingLoginForm(false);
       }
     } else {
+      // User already filled form or is logged in, skip to property details
       loadPropertyDetail(propertyId);
     }
   };
@@ -63,12 +71,19 @@ export default function App() {
     }
   };
 
-  const handleLoginSubmit = (data: { name: string; phone: string; propertyType: string; location: string }) => {
+  const handleLoginSubmit = async (data: { name: string; phone: string; propertyType: string; location: string }) => {
     console.log('User login data:', data);
+    
+    // Save to localStorage so user doesn't see form again in this browser
+    localStorage.setItem('hasFilledPropertyForm', 'true');
+    
     setIsLoggedIn(true);
     setShowLoginModal(false);
     if (pendingPropertyId !== null) {
-      loadPropertyDetail(pendingPropertyId);
+      // Start loading before fetching property detail
+      setLoadingProperty(true);
+      setSelectedPropertyId(pendingPropertyId);
+      await loadPropertyDetail(pendingPropertyId);
       setPendingPropertyId(null);
       setPendingPropertyTitle('');
     }
@@ -94,10 +109,6 @@ export default function App() {
               ? 'Browse our selection of premium rental properties in prime locations' 
               : 'Discover exceptional properties available for purchase'}
           />
-        ) : loadingProperty ? (
-          <div className="flex justify-center items-center py-16">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-          </div>
         ) : selectedProperty ? (
           <PropertyDetail 
             property={selectedProperty}
@@ -125,7 +136,12 @@ export default function App() {
           onSubmit={handleLoginSubmit}
           propertyTitle={pendingPropertyTitle}
           propertyId={pendingPropertyId}
+          loading={loadingLoginForm}
         />
+      )}
+
+      {loadingLoginForm && !showLoginModal && (
+        <LoadingAnimation fullScreen type="progress-bar" />
       )}
 
       <FloatingContactButton />

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { PropertyFiltersComponent, PropertyFilters } from './PropertyFilters';
 import { motion } from 'motion/react';
 import { propertyService } from '../services/propertyService';
+import { LoadingAnimation } from './LoadingAnimation';
 
 interface PropertyListProps {
   listingType: 'Rent' | 'Sale';
@@ -190,9 +191,7 @@ export function PropertyList({
       
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center py-16">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-        </div>
+        <LoadingAnimation message="Fetching properties..." />
       )}
 
       {/* Error State */}
