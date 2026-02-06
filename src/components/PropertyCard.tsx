@@ -1,4 +1,4 @@
-import { MapPin, Bed, Bath, Maximize, Home } from 'lucide-react';
+import { MapPin, Bed, Bath, Maximize, Home, Trash2, Pencil } from 'lucide-react';
 import { Property, formatPrice, formatArea } from '../types';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { motion } from 'motion/react';
@@ -7,6 +7,9 @@ import { API_BASE_URL } from '../config/api';
 interface PropertyCardProps {
   property: Property;
   onClick: () => void;
+  showAdminActions?: boolean;
+  onDelete?: () => void;
+  onUpdate?: () => void;
 }
 
 type ImageLike = string | { data?: { type?: string; data?: number[] } | Buffer; contentType?: string };
@@ -41,7 +44,7 @@ const toDataUri = (image: ImageLike): string => {
   }
 };
 
-export function PropertyCard({ property, onClick }: PropertyCardProps) {
+export function PropertyCard({ property, onClick, showAdminActions = false, onDelete, onUpdate }: PropertyCardProps) {
   // Get the first image URL and prepend base URL if it's a relative path
   const getImageUrl = (imagePath: ImageLike) => {
     if (!imagePath) return '';
@@ -96,10 +99,43 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
           )}
         </div>
 
-        {property.status !== 'Available' && (
-          <div className="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-lg">
-            {property.status}
+        {showAdminActions ? (
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                onDelete?.();
+              }}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs shadow-lg"
+              style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+            >
+              <Trash2 className="w-3.5 h-3.5 text-white" />
+              Delete
+            </button>
+
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                onUpdate?.();
+              }}
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs shadow-lg hover:bg-blue-700"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Update
+            </button>
+
+            {property.status !== 'Available' && (
+              <div className="px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-lg">
+                {property.status}
+              </div>
+            )}
           </div>
+        ) : (
+          property.status !== 'Available' && (
+            <div className="absolute top-4 left-4 px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-lg">
+              {property.status}
+            </div>
+          )
         )}
       </div>
       

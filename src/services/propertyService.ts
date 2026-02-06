@@ -33,6 +33,12 @@ export interface SearchResponse {
   data: Property[];
 }
 
+export interface MutationResponse {
+  success: boolean;
+  message?: string;
+  data?: Property;
+}
+
 export interface Property {
   _id: string;
   title: string;
@@ -118,6 +124,72 @@ class PropertyService {
       return await response.json();
     } catch (error) {
       console.error('Error searching properties:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new property
+   */
+  async createProperty(payload: FormData): Promise<MutationResponse> {
+    try {
+      const response = await fetch(API_ENDPOINTS.PROPERTIES, {
+        method: 'POST',
+        body: payload
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating property:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing property
+   */
+  async updateProperty(id: string, payload: FormData): Promise<MutationResponse> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PROPERTIES}/${id}`, {
+        method: 'PUT',
+        body: payload
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating property:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a property
+   */
+  async deleteProperty(id: string): Promise<MutationResponse> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.PROPERTIES}/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to delete property');
+      }
+      return data;
+    } catch (error) {
+      console.error('Error deleting property:', error);
       throw error;
     }
   }
