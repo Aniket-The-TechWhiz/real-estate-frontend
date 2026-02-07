@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Home, TrendingUp } from 'lucide-react';
-import heroNight from '../assets/hero-night.jpg';
 
 interface HeroProps {
   onNavigate: (view: 'rent' | 'resale') => void;
@@ -29,7 +28,9 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
     <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white overflow-hidden">
       {/* Residential Background Image */}
       <img
-        src={heroNight}
+        src="/hero-night-1280.webp"
+        srcSet="/hero-night-640.webp 640w, /hero-night-960.webp 960w, /hero-night-1280.webp 1280w, /hero-night-1600.webp 1600w"
+        sizes="100vw"
         alt="Luxury residential property"
         className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
         loading="eager"

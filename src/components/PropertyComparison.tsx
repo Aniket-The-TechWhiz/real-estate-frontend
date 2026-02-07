@@ -34,6 +34,7 @@ export function PropertyComparison({ properties, onRemove, onClose }: PropertyCo
             <button
               onClick={onClose}
               className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              aria-label="Close comparison"
             >
               <X className="w-6 h-6" />
             </button>
@@ -55,6 +56,7 @@ export function PropertyComparison({ properties, onRemove, onClose }: PropertyCo
                     <button
                       onClick={() => onRemove(index)}
                       className="absolute top-4 right-4 z-10 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                      aria-label={`Remove ${property.title} from comparison`}
                     >
                       <X className="w-4 h-4" />
                     </button>
