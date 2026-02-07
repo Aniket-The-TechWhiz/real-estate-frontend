@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PropertyCard } from './PropertyCard';
 import { Property } from '../types';
 import { ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react';
@@ -6,6 +6,9 @@ import { PropertyFiltersComponent, PropertyFilters } from './PropertyFilters';
 import { motion } from 'motion/react';
 import { propertyService } from '../services/propertyService';
 import { LoadingAnimation } from './LoadingAnimation';
+
+type IdleCallbackHandle = number;
+type IdleCallback = (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void;
 
 interface PropertyListProps {
   listingType: 'Rent' | 'Sale';
@@ -33,14 +36,11 @@ export function PropertyList({
     minBudget: '',
     maxBudget: ''
   });
+  const [isFetchReady, setIsFetchReady] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const propertiesPerPage = 6;
 
-  // Fetch properties from API
-  useEffect(() => {
-    fetchProperties();
-  }, [currentPage, listingType, searchQuery, filters]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -100,7 +100,69 @@ export function PropertyList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, listingType, searchQuery, filters]);
+
+  useEffect(() => {
+    if (isFetchReady) {
+      return;
+    }
+
+    const element = containerRef.current;
+    let didCancel = false;
+    let idleId: IdleCallbackHandle | null = null;
+    let timeoutId: number | null = null;
+    let observer: IntersectionObserver | null = null;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleCallback, options?: { timeout: number }) => IdleCallbackHandle;
+      cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+    };
+
+    if (element) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting && !didCancel) {
+            setIsFetchReady(true);
+            observer?.disconnect();
+          }
+        },
+        { rootMargin: '200px' }
+      );
+      observer.observe(element);
+    }
+
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      idleId = idleWindow.requestIdleCallback(() => {
+        if (!didCancel) {
+          setIsFetchReady(true);
+        }
+      }, { timeout: 2000 });
+    } else {
+      timeoutId = window.setTimeout(() => {
+        if (!didCancel) {
+          setIsFetchReady(true);
+        }
+      }, 1200);
+    }
+
+    return () => {
+      didCancel = true;
+      observer?.disconnect();
+      if (idleId !== null && typeof idleWindow.cancelIdleCallback === 'function') {
+        idleWindow.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [isFetchReady]);
+
+  // Fetch properties from API
+  useEffect(() => {
+    if (!isFetchReady) {
+      return;
+    }
+    fetchProperties();
+  }, [fetchProperties, isFetchReady]);
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -160,7 +222,7 @@ export function PropertyList({
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
       <div className="mb-8">
         <h2 className="text-3xl mb-2">{title}</h2>
         <p className="text-gray-600">{description}</p>
@@ -251,6 +313,7 @@ export function PropertyList({
                     ? 'border-gray-200 text-gray-400 cursor-not-allowed'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
+                aria-label="Previous page"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -283,6 +346,7 @@ export function PropertyList({
                     ? 'border-gray-200 text-gray-400 cursor-not-allowed'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
+                aria-label="Next page"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

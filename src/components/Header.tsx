@@ -1,6 +1,6 @@
 import { Building2, Phone, Mail, Shield, LayoutDashboard, LogOut } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface HeaderProps {
   onAdminClick: () => void;
@@ -20,9 +20,28 @@ export function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
+  const rafIdRef = useRef<number | null>(null);
+  const latestScrollRef = useRef(0);
+
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    setIsScrolled(latest > 50);
+    latestScrollRef.current = latest;
+    if (rafIdRef.current !== null) {
+      return;
+    }
+    rafIdRef.current = window.requestAnimationFrame(() => {
+      setIsScrolled(latestScrollRef.current > 50);
+      rafIdRef.current = null;
+    });
   });
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <motion.header 

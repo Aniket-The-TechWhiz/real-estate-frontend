@@ -36,6 +36,7 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+        aria-label="Close gallery"
       >
         <X className="w-8 h-8" />
       </button>
@@ -54,6 +55,7 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
         <button
           onClick={goToPrevious}
           className="absolute left-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-3 hover:bg-black/70 transition-all"
+          aria-label="Previous image"
         >
           <ChevronLeft className="w-8 h-8" />
         </button>
@@ -70,6 +72,7 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
         <button
           onClick={goToNext}
           className="absolute right-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-3 hover:bg-black/70 transition-all"
+          aria-label="Next image"
         >
           <ChevronRight className="w-8 h-8" />
         </button>
@@ -83,6 +86,7 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
             className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
               currentIndex === index ? 'border-blue-500 scale-110' : 'border-white/50'
             }`}
+            aria-label={`View image ${index + 1}`}
           >
             <ImageWithFallback
               src={image}
