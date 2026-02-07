@@ -8,6 +8,7 @@ interface HeaderProps {
   onAdminLogout: () => void;
   isAdminAuthenticated: boolean;
   isAdminPanelOpen: boolean;
+  transparent?: boolean;
 }
 
 export function Header({
@@ -15,7 +16,8 @@ export function Header({
   onAdminPanelToggle,
   onAdminLogout,
   isAdminAuthenticated,
-  isAdminPanelOpen
+  isAdminPanelOpen,
+  transparent = false
 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
@@ -43,13 +45,18 @@ export function Header({
     };
   }, []);
 
+  const baseHeaderClass = transparent
+    ? 'absolute top-0 left-0 right-0 z-50'
+    : 'sticky top-0 z-50';
+  const headerSurfaceClass = transparent
+    ? 'bg-transparent'
+    : isScrolled
+      ? 'bg-white/95 backdrop-blur-md shadow-lg'
+      : 'bg-white shadow-sm';
+
   return (
     <motion.header 
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
-          : 'bg-white shadow-sm'
-      }`}
+      className={`${baseHeaderClass} transition-all duration-300 ${headerSurfaceClass}`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
@@ -68,8 +75,8 @@ export function Header({
               </div>
             </div>
             <div>
-              <h1 className="text-2xl text-gray-900">PrimeBuild</h1>
-              <p className="text-xs text-gray-500 -mt-0.5">Premium Property Brokers</p>
+              <h1 className={`text-2xl ${transparent ? 'text-white' : 'text-gray-900'}`}>PrimeBuild</h1>
+              <p className={`text-xs -mt-0.5 ${transparent ? 'text-white/80' : 'text-gray-500'}`}>Premium Property Brokers</p>
             </div>
           </motion.div>
 
@@ -77,23 +84,23 @@ export function Header({
           <div className="hidden md:flex items-center gap-6 flex-wrap">
             <motion.a 
               href="tel:+15551234567" 
-              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors group"
+              className={`flex items-center gap-2 transition-colors group ${transparent ? 'text-white hover:text-white' : 'text-gray-700 hover:text-blue-600'}`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                <Phone className="w-4 h-4 text-blue-600" />
+              <div className={`p-2 rounded-full transition-colors ${transparent ? 'bg-white/10 group-hover:bg-white/20' : 'bg-blue-50 group-hover:bg-blue-100'}`}>
+                <Phone className={`w-4 h-4 ${transparent ? 'text-white' : 'text-blue-600'}`} />
               </div>
               <span className="text-sm">+1 (555) 123-4567</span>
             </motion.a>
             <motion.a 
               href="mailto:info@primebuild.com" 
-              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors group"
+              className={`flex items-center gap-2 transition-colors group ${transparent ? 'text-white hover:text-white' : 'text-gray-700 hover:text-blue-600'}`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                <Mail className="w-4 h-4 text-blue-600" />
+              <div className={`p-2 rounded-full transition-colors ${transparent ? 'bg-white/10 group-hover:bg-white/20' : 'bg-blue-50 group-hover:bg-blue-100'}`}>
+                <Mail className={`w-4 h-4 ${transparent ? 'text-white' : 'text-blue-600'}`} />
               </div>
               <span className="text-sm">info@primebuild.com</span>
             </motion.a>
@@ -104,14 +111,22 @@ export function Header({
               <>
                 <button
                   onClick={onAdminPanelToggle}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors"
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                    transparent
+                      ? 'border-white/60 text-white hover:bg-white/10'
+                      : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                  }`}
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   {isAdminPanelOpen ? 'Back to Site' : 'Admin Panel'}
                 </button>
                 <button
                   onClick={onAdminLogout}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                    transparent
+                      ? 'border-white/40 text-white hover:bg-white/10'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -120,9 +135,13 @@ export function Header({
             ) : (
               <button
                 onClick={onAdminClick}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                  transparent
+                    ? 'border-white/40 text-white hover:bg-white/10'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <Shield className="w-4 h-4 text-blue-600" />
+                <Shield className={`w-4 h-4 ${transparent ? 'text-white' : 'text-blue-600'}`} />
                 Admin
               </button>
             )}

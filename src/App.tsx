@@ -173,6 +173,7 @@ export default function App() {
           onAdminLogout={handleAdminLogout}
           isAdminAuthenticated={isAdminAuthenticated}
           isAdminPanelOpen={isAdminPanelOpen}
+          transparent={!isAdminPanelOpen}
         />
       )}
       {selectedPropertyId === null && !isAdminPanelOpen && (
@@ -231,6 +232,10 @@ export default function App() {
       )}
 
       {loadingLoginForm && !showLoginModal && (
+        <LoadingAnimation fullScreen type="progress-bar" />
+      )}
+
+      {loadingProperty && (
         <LoadingAnimation fullScreen type="progress-bar" />
       )}
 

@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Home, TrendingUp } from 'lucide-react';
+import heroNight from '../assets/hero-night.jpg';
 
 interface HeroProps {
   onNavigate: (view: 'rent' | 'resale') => void;
@@ -28,11 +29,9 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
     <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white overflow-hidden">
       {/* Residential Background Image */}
       <img
-        src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1600&auto=format&fit=crop"
-        srcSet="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop 1200w, https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1600&auto=format&fit=crop 1600w, https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop 2075w"
-        sizes="100vw"
+        src={heroNight}
         alt="Luxury residential property"
-        className="absolute inset-0 w-full h-full object-cover opacity-30"
+        className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
         loading="eager"
         fetchPriority="high"
         decoding="async"

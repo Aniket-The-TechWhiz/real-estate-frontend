@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useSpring, useInView } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Building2, Users, Award, TrendingUp } from 'lucide-react';
 
 interface StatItemProps {
@@ -8,6 +8,7 @@ interface StatItemProps {
   label: string;
   suffix?: string;
   prefix?: string;
+  animate?: boolean;
 }
 
 function AnimatedCounter({ value, suffix = '', prefix = '' }: { value: number; suffix?: string; prefix?: string }) {
@@ -36,7 +37,11 @@ function AnimatedCounter({ value, suffix = '', prefix = '' }: { value: number; s
   return <span ref={ref}>0</span>;
 }
 
-function StatItem({ icon, value, label, suffix, prefix }: StatItemProps) {
+function StaticCounter({ value, suffix = '', prefix = '' }: { value: number; suffix?: string; prefix?: string }) {
+  return <span>{prefix + value.toLocaleString() + suffix}</span>;
+}
+
+function StatItem({ icon, value, label, suffix, prefix, animate = true }: StatItemProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -55,7 +60,11 @@ function StatItem({ icon, value, label, suffix, prefix }: StatItemProps) {
           {icon}
         </motion.div>
         <div className="text-4xl mb-2 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-          <AnimatedCounter value={value} suffix={suffix} prefix={prefix} />
+          {animate ? (
+            <AnimatedCounter value={value} suffix={suffix} prefix={prefix} />
+          ) : (
+            <StaticCounter value={value} suffix={suffix} prefix={prefix} />
+          )}
         </div>
         <p className="text-gray-600">{label}</p>
       </div>
@@ -64,6 +73,22 @@ function StatItem({ icon, value, label, suffix, prefix }: StatItemProps) {
 }
 
 export function StatsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
+  const [shouldAnimate] = useState(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+    return sessionStorage.getItem('statsAnimated') !== 'true';
+  });
+
+  useEffect(() => {
+    if (!shouldAnimate || typeof window === 'undefined') {
+      return;
+    }
+    sessionStorage.setItem('statsAnimated', 'true');
+  }, [shouldAnimate]);
+
   const stats = [
     {
       icon: <Building2 className="w-8 h-8" />,
@@ -92,7 +117,7 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="relative bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 py-20 overflow-hidden">
+    <section ref={sectionRef} className="relative bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 py-20 overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl"></div>
@@ -117,7 +142,7 @@ export function StatsSection() {
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat, index) => (
-            <StatItem key={index} {...stat} />
+            <StatItem key={index} {...stat} animate={shouldAnimate} />
           ))}
         </div>
       </div>
