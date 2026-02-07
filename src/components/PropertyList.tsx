@@ -175,6 +175,13 @@ export function PropertyList({
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    window.requestAnimationFrame(() => {
+      const section = document.getElementById('properties-section');
+      if (section) {
+        const top = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+      }
+    });
   };
 
   useEffect(() => {
