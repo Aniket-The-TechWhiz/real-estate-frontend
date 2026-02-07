@@ -126,6 +126,7 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
                 src={getImageUrl(property.images[selectedImage])}
                 alt={property.title}
                 className="w-full h-full object-cover cursor-pointer"
+                decoding="async"
                 onClick={() => setShowGalleryModal(true)}
               />
               {isFurnished && (
@@ -159,6 +160,8 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
                     src={getImageUrl(image)}
                     alt={`${property.title} ${index + 1}`}
                     className="w-full h-full object-cover hover:scale-110 transition-transform"
+                    loading="lazy"
+                    decoding="async"
                   />
                   {index === maxThumbnails - 1 && remainingImages > 0 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

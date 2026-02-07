@@ -63,6 +63,7 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
             src={images[currentIndex]}
             alt={`${title} ${currentIndex + 1}`}
             className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            decoding="async"
           />
         </div>
 
@@ -87,6 +88,8 @@ export function ImageGalleryModal({ images, initialIndex, onClose, title }: Imag
               src={image}
               alt={`Thumbnail ${index + 1}`}
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           </button>
         ))}

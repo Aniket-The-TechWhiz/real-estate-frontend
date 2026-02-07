@@ -27,11 +27,13 @@ export function Hero({ onNavigate, currentView }: HeroProps) {
   return (
     <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white overflow-hidden">
       {/* Residential Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop")'
-        }}
+      <img
+        src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
+        alt="Luxury residential property"
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
       />
       
       {/* Dark Overlay for Better Text Visibility */}

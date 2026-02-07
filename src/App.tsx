@@ -1,20 +1,41 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { PropertyList } from './components/PropertyList';
-import { PropertyDetail } from './components/PropertyDetail';
-import { LoginModal } from './components/LoginModal';
-import { CustomerReviews } from './components/CustomerReviews';
-import { Footer } from './components/Footer';
-import { StatsSection } from './components/StatsSection';
-import { FloatingContactButton } from './components/FloatingContactButton';
-import { FAQSection } from './components/FAQSection';
-import { Newsletter } from './components/Newsletter';
 import { propertyService } from './services/propertyService';
 import { Property } from './types';
 import { LoadingAnimation } from './components/LoadingAnimation';
-import { AdminLoginModal } from './components/AdminLoginModal';
-import { AdminPanel } from './components/AdminPanel';
+
+const PropertyDetail = lazy(() =>
+  import('./components/PropertyDetail').then((module) => ({ default: module.PropertyDetail }))
+);
+const LoginModal = lazy(() =>
+  import('./components/LoginModal').then((module) => ({ default: module.LoginModal }))
+);
+const CustomerReviews = lazy(() =>
+  import('./components/CustomerReviews').then((module) => ({ default: module.CustomerReviews }))
+);
+const Footer = lazy(() =>
+  import('./components/Footer').then((module) => ({ default: module.Footer }))
+);
+const StatsSection = lazy(() =>
+  import('./components/StatsSection').then((module) => ({ default: module.StatsSection }))
+);
+const FloatingContactButton = lazy(() =>
+  import('./components/FloatingContactButton').then((module) => ({ default: module.FloatingContactButton }))
+);
+const FAQSection = lazy(() =>
+  import('./components/FAQSection').then((module) => ({ default: module.FAQSection }))
+);
+const Newsletter = lazy(() =>
+  import('./components/Newsletter').then((module) => ({ default: module.Newsletter }))
+);
+const AdminLoginModal = lazy(() =>
+  import('./components/AdminLoginModal').then((module) => ({ default: module.AdminLoginModal }))
+);
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((module) => ({ default: module.AdminPanel }))
+);
 
 type ViewType = 'rent' | 'resale';
 
@@ -161,46 +182,52 @@ export default function App() {
       <main id="properties-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {selectedPropertyId === null ? (
           isAdminPanelOpen ? (
-            <AdminPanel onExit={() => setIsAdminPanelOpen(false)} />
+            <Suspense fallback={<LoadingAnimation fullScreen type="progress-bar" />}>
+              <AdminPanel onExit={() => setIsAdminPanelOpen(false)} />
+            </Suspense>
           ) : (
-          <PropertyList 
-            listingType={currentView === 'rent' ? 'Rent' : 'Sale'}
-            onSelectProperty={handlePropertyClick}
-            title={currentView === 'rent' ? 'Available Rental Properties' : 'Properties for Sale'}
-            description={currentView === 'rent' 
-              ? 'Browse our selection of premium rental properties in prime locations' 
-              : 'Discover exceptional properties available for purchase'}
-          />
+            <PropertyList 
+              listingType={currentView === 'rent' ? 'Rent' : 'Sale'}
+              onSelectProperty={handlePropertyClick}
+              title={currentView === 'rent' ? 'Available Rental Properties' : 'Properties for Sale'}
+              description={currentView === 'rent' 
+                ? 'Browse our selection of premium rental properties in prime locations' 
+                : 'Discover exceptional properties available for purchase'}
+            />
           )
         ) : selectedProperty ? (
-          <PropertyDetail 
-            property={selectedProperty}
-            onBack={handleBackFromProperty}
-          />
+          <Suspense fallback={<LoadingAnimation fullScreen type="progress-bar" />}>
+            <PropertyDetail 
+              property={selectedProperty}
+              onBack={handleBackFromProperty}
+            />
+          </Suspense>
         ) : null}
       </main>
 
       {selectedPropertyId === null && !isAdminPanelOpen && (
-        <>
+        <Suspense fallback={<LoadingAnimation fullScreen type="progress-bar" />}>
           <StatsSection />
           <CustomerReviews />
           <FAQSection />
           <Newsletter />
-        </>
+        </Suspense>
       )}
 
       {showLoginModal && pendingPropertyId !== null && (
-        <LoginModal
-          onClose={() => {
-            setShowLoginModal(false);
-            setPendingPropertyId(null);
-            setPendingPropertyTitle('');
-          }}
-          onSubmit={handleLoginSubmit}
-          propertyTitle={pendingPropertyTitle}
-          propertyId={pendingPropertyId}
-          loading={loadingLoginForm}
-        />
+        <Suspense fallback={<LoadingAnimation fullScreen type="progress-bar" />}>
+          <LoginModal
+            onClose={() => {
+              setShowLoginModal(false);
+              setPendingPropertyId(null);
+              setPendingPropertyTitle('');
+            }}
+            onSubmit={handleLoginSubmit}
+            propertyTitle={pendingPropertyTitle}
+            propertyId={pendingPropertyId}
+            loading={loadingLoginForm}
+          />
+        </Suspense>
       )}
 
       {loadingLoginForm && !showLoginModal && (
@@ -208,18 +235,26 @@ export default function App() {
       )}
 
       {showAdminLoginModal && (
-        <AdminLoginModal
-          onClose={() => {
-            setShowAdminLoginModal(false);
-            setAdminLoginError(null);
-          }}
-          onSubmit={handleAdminLogin}
-          error={adminLoginError}
-        />
+        <Suspense fallback={<LoadingAnimation fullScreen type="progress-bar" />}>
+          <AdminLoginModal
+            onClose={() => {
+              setShowAdminLoginModal(false);
+              setAdminLoginError(null);
+            }}
+            onSubmit={handleAdminLogin}
+            error={adminLoginError}
+          />
+        </Suspense>
       )}
 
-      <FloatingContactButton />
-      {selectedProperty === null && !isAdminPanelOpen && <Footer />}
+      <Suspense fallback={null}>
+        <FloatingContactButton />
+      </Suspense>
+      {selectedProperty === null && !isAdminPanelOpen && (
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
+      )}
     </div>
   );
 }
