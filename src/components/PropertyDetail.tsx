@@ -3,7 +3,6 @@ import { ArrowLeft, MapPin, Bed, Bath, Maximize, Home, Check } from 'lucide-reac
 import { Property, formatPrice, formatArea } from '../types';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ImageGalleryModal } from './ImageGalleryModal';
-import { API_BASE_URL } from '../config/api';
 
 interface PropertyDetailProps {
   property: Property;
@@ -14,63 +13,22 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   
+  const legacyImages = Array.isArray(property.images)
+    ? property.images.filter((img): img is string => typeof img === 'string')
+    : [];
+
+  const images = property.imageUrls && property.imageUrls.length > 0
+    ? property.imageUrls
+    : property.thumbnailUrl
+      ? [property.thumbnailUrl]
+      : legacyImages;
+
   const maxThumbnails = 3;
-  const remainingImages = property.images.length - maxThumbnails;
-  const displayedThumbnails = property.images.slice(0, maxThumbnails);
-  if (!Array.isArray(property.images) || property.images.length === 0) {
-    console.error('PropertyDetail: no images provided', { propertyId: property._id, images: property.images });
+  const remainingImages = images.length - maxThumbnails;
+  const displayedThumbnails = images.slice(0, maxThumbnails);
+  if (images.length === 0) {
+    console.error('PropertyDetail: no images provided', { propertyId: property._id });
   }
-
-  // Get the image URL and prepend base URL if it's a relative path
-  type ImageLike = string | { data?: { type?: string; data?: number[] } | Buffer; contentType?: string };
-
-  const toBase64 = (bytes: number[]) => {
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.slice(i, i + chunkSize);
-      binary += String.fromCharCode(...chunk);
-    }
-    return btoa(binary);
-  };
-
-  const toDataUri = (image: ImageLike): string => {
-    if (typeof image === 'string') return image;
-    if (!image || !image.data || !image.contentType) {
-      console.error('Image normalization failed: missing data/contentType', image);
-      return '';
-    }
-    const data = (image.data as any).data || image.data;
-    if (!Array.isArray(data)) {
-      console.error('Image normalization failed: data is not array', image);
-      return '';
-    }
-    try {
-      const base64 = toBase64(data);
-      return `data:${image.contentType};base64,${base64}`;
-    } catch (error) {
-      console.error('Image normalization failed: base64 conversion error', error, image);
-      return '';
-    }
-  };
-
-  const getImageUrl = (imagePath: ImageLike) => {
-    if (!imagePath) return '';
-    const normalized = toDataUri(imagePath);
-    if (!normalized) {
-      console.error('Image URL generation failed: normalized empty', imagePath);
-      return '';
-    }
-    if (normalized.startsWith('data:')) {
-      return normalized;
-    }
-    if (normalized.startsWith('http')) {
-      return normalized;
-    }
-    // Images are served at /uploads, not /api
-    const baseUrl = API_BASE_URL.replace('/api', '');
-    return `${baseUrl}/${normalized}`;
-  };
 
   const isFurnished = property.furnishing === 'Furnished' || property.furnishing === 'Fully Furnished';
 
@@ -122,13 +80,19 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
           {/* Image Gallery */}
           <div>
             <div className="relative h-96 rounded-lg overflow-hidden mb-4">
-              <ImageWithFallback
-                src={getImageUrl(property.images[selectedImage])}
-                alt={property.title}
-                className="w-full h-full object-cover cursor-pointer"
-                decoding="async"
-                onClick={() => setShowGalleryModal(true)}
-              />
+              {images.length > 0 ? (
+                <ImageWithFallback
+                  src={images[selectedImage]}
+                  alt={property.title}
+                  className="w-full h-full object-cover cursor-pointer"
+                  decoding="async"
+                  onClick={() => setShowGalleryModal(true)}
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                  Image unavailable
+                </div>
+              )}
               {isFurnished && (
                 <div className="absolute top-4 right-4 px-3 py-2 bg-blue-600 text-white rounded-full text-sm">
                   {property.furnishing}
@@ -141,36 +105,38 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
               )}
             </div>
             
-            <div className="grid grid-cols-3 gap-3">
-              {displayedThumbnails.map((image, index) => (
-                <div
-                  key={index}
-                  onClick={() => {
-                    if (index === maxThumbnails - 1 && remainingImages > 0) {
-                      setShowGalleryModal(true);
-                    } else {
-                      setSelectedImage(index);
-                    }
-                  }}
-                  className={`relative h-24 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                    selectedImage === index ? 'border-blue-600' : 'border-transparent'
-                  }`}
-                >
-                  <ImageWithFallback
-                    src={getImageUrl(image)}
-                    alt={`${property.title} ${index + 1}`}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  {index === maxThumbnails - 1 && remainingImages > 0 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-white text-xl">+{remainingImages}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {displayedThumbnails.map((image, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      if (index === maxThumbnails - 1 && remainingImages > 0) {
+                        setShowGalleryModal(true);
+                      } else {
+                        setSelectedImage(index);
+                      }
+                    }}
+                    className={`relative h-24 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                      selectedImage === index ? 'border-blue-600' : 'border-transparent'
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={image}
+                      alt={`${property.title} ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {index === maxThumbnails - 1 && remainingImages > 0 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white text-xl">+{remainingImages}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Property Details */}
@@ -227,9 +193,9 @@ export function PropertyDetail({ property, onBack }: PropertyDetailProps) {
         </div>
       </div>
       
-      {showGalleryModal && (
+      {showGalleryModal && images.length > 0 && (
         <ImageGalleryModal
-          images={property.images.map(img => getImageUrl(img))}
+          images={images}
           initialIndex={selectedImage}
           onClose={() => setShowGalleryModal(false)}
           title={property.title}

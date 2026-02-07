@@ -63,11 +63,17 @@ export function PropertyComparison({ properties, onRemove, onClose }: PropertyCo
 
                     {/* Property Image */}
                     <div className="relative h-48">
-                      <ImageWithFallback
-                        src={property.images[0]}
-                        alt={property.title}
-                        className="w-full h-full object-cover"
-                      />
+                      {property.thumbnailUrl || property.imageUrls?.[0] || (Array.isArray(property.images) && typeof property.images[0] === 'string' ? property.images[0] : '') ? (
+                        <ImageWithFallback
+                          src={property.thumbnailUrl || property.imageUrls?.[0] || (Array.isArray(property.images) && typeof property.images[0] === 'string' ? property.images[0] : '')}
+                          alt={property.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                          Image unavailable
+                        </div>
+                      )}
                     </div>
 
                     {/* Property Details */}

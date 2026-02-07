@@ -17,7 +17,9 @@ export interface Project {
 export interface Property {
   _id: string;
   title: string;
-  images: Array<
+  thumbnailUrl?: string;
+  imageUrls?: string[];
+  images?: Array<
     | string
     | {
         data?: { type?: string; data?: number[] } | Buffer;

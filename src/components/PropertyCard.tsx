@@ -2,7 +2,6 @@ import { MapPin, Bed, Bath, Maximize, Home, Trash2, Pencil } from 'lucide-react'
 import { Property, formatPrice, formatArea } from '../types';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { motion } from 'motion/react';
-import { API_BASE_URL } from '../config/api';
 
 interface PropertyCardProps {
   property: Property;
@@ -12,63 +11,11 @@ interface PropertyCardProps {
   onUpdate?: () => void;
 }
 
-type ImageLike = string | { data?: { type?: string; data?: number[] } | Buffer; contentType?: string };
-
-const toBase64 = (bytes: number[]) => {
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.slice(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-  return btoa(binary);
-};
-
-const toDataUri = (image: ImageLike): string => {
-  if (typeof image === 'string') return image;
-  if (!image || !image.data || !image.contentType) {
-    console.error('Image normalization failed: missing data/contentType', image);
-    return '';
-  }
-  const data = (image.data as any).data || image.data;
-  if (!Array.isArray(data)) {
-    console.error('Image normalization failed: data is not array', image);
-    return '';
-  }
-  try {
-    const base64 = toBase64(data);
-    return `data:${image.contentType};base64,${base64}`;
-  } catch (error) {
-    console.error('Image normalization failed: base64 conversion error', error, image);
-    return '';
-  }
-};
-
 export function PropertyCard({ property, onClick, showAdminActions = false, onDelete, onUpdate }: PropertyCardProps) {
-  // Get the first image URL and prepend base URL if it's a relative path
-  const getImageUrl = (imagePath: ImageLike) => {
-    if (!imagePath) return '';
-    const normalized = toDataUri(imagePath);
-    if (!normalized) {
-      console.error('Image URL generation failed: normalized empty', imagePath);
-      return '';
-    }
-    if (normalized.startsWith('data:')) {
-      return normalized;
-    }
-    if (normalized.startsWith('http')) {
-      return normalized;
-    }
-    // Images are served at /uploads, not /api
-    const baseUrl = API_BASE_URL.replace('/api', '');
-    return `${baseUrl}/${normalized}`;
-  };
-
   const isHot = property.isHot === true;
-  const firstImage = Array.isArray(property.images) ? (property.images[0] as ImageLike) : '';
-  if (!firstImage) {
-    console.error('PropertyCard: missing first image', { propertyId: property._id, images: property.images });
-  }
+  const legacyImage = Array.isArray(property.images) ? property.images[0] : '';
+  const legacyImageUrl = typeof legacyImage === 'string' ? legacyImage : '';
+  const firstImage = property.thumbnailUrl || property.imageUrls?.[0] || legacyImageUrl || '';
 
   return (
     <motion.div 
@@ -80,13 +27,19 @@ export function PropertyCard({ property, onClick, showAdminActions = false, onDe
       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
     >
       <div className="relative h-56 overflow-hidden">
-        <ImageWithFallback
-          src={getImageUrl(firstImage)}
-          alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-        />
+        {firstImage ? (
+          <ImageWithFallback
+            src={firstImage}
+            alt={property.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+            Image unavailable
+          </div>
+        )}
         
         <div className="absolute top-4 right-4 flex flex-col gap-2">
           {isHot && (

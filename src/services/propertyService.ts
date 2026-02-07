@@ -42,7 +42,8 @@ export interface MutationResponse {
 export interface Property {
   _id: string;
   title: string;
-  images: string[];
+  thumbnailUrl?: string;
+  imageUrls?: string[];
   category: string;
   listingType: 'Rent' | 'Sale';
   price: number;
@@ -67,6 +68,9 @@ class PropertyService {
   async getProperties(filters?: PropertyFilters): Promise<PropertyResponse> {
     try {
       const queryParams = new URLSearchParams();
+      queryParams.set('includeImages', 'true');
+      queryParams.set('imageSize', 'thumb');
+      queryParams.set('thumbOnly', 'true');
       
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
@@ -95,7 +99,11 @@ class PropertyService {
    */
   async getPropertyById(id: string): Promise<SinglePropertyResponse> {
     try {
-      const response = await fetch(`${API_ENDPOINTS.PROPERTIES}/${id}`);
+      const params = new URLSearchParams({
+        includeImages: 'true',
+        imageSize: 'original'
+      });
+      const response = await fetch(`${API_ENDPOINTS.PROPERTIES}/${id}?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
