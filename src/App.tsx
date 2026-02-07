@@ -109,6 +109,7 @@ export default function App() {
       const response = await propertyService.getPropertyById(propertyId);
       setSelectedProperty(response.data);
       setSelectedPropertyId(propertyId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error loading property details:', error);
       alert('Failed to load property details. Please try again.');
@@ -139,6 +140,7 @@ export default function App() {
     setSelectedPropertyId(null);
     setSelectedProperty(null);
   };
+
 
   const handleAdminLogin = (data: { username: string; password: string }) => {
     if (

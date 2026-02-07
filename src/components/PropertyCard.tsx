@@ -9,9 +9,10 @@ interface PropertyCardProps {
   showAdminActions?: boolean;
   onDelete?: () => void;
   onUpdate?: () => void;
+  cardId?: string;
 }
 
-export function PropertyCard({ property, onClick, showAdminActions = false, onDelete, onUpdate }: PropertyCardProps) {
+export function PropertyCard({ property, onClick, showAdminActions = false, onDelete, onUpdate, cardId }: PropertyCardProps) {
   const isHot = property.isHot === true;
   const legacyImage = Array.isArray(property.images) ? property.images[0] : '';
   const legacyImageUrl = typeof legacyImage === 'string' ? legacyImage : '';
@@ -19,6 +20,7 @@ export function PropertyCard({ property, onClick, showAdminActions = false, onDe
 
   return (
     <motion.div 
+      id={cardId}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PropertyCard } from './PropertyCard';
 import { Property } from '../types';
 import { ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react';
@@ -26,7 +26,14 @@ export function PropertyList({
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 1;
+    }
+    const storedPage = sessionStorage.getItem('restorePropertyPage');
+    const parsed = storedPage ? Number(storedPage) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+  });
   const [totalPages, setTotalPages] = useState(1);
   const [totalProperties, setTotalProperties] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +44,8 @@ export function PropertyList({
     maxBudget: ''
   });
   const [isFetchReady, setIsFetchReady] = useState(false);
+  const [restoreTargetId, setRestoreTargetId] = useState<string | null>(null);
+  const [restoreTargetPage, setRestoreTargetPage] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const propertiesPerPage = 6;
 
@@ -166,8 +175,63 @@ export function PropertyList({
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    const section = document.getElementById('properties-section');
+    if (section && !restoreTargetId) {
+      window.requestAnimationFrame(() => {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [currentPage, restoreTargetId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const storedId = sessionStorage.getItem('restorePropertyId');
+    const storedPage = sessionStorage.getItem('restorePropertyPage');
+    if (storedId) {
+      setRestoreTargetId(storedId);
+      setRestoreTargetPage(storedPage ? Number(storedPage) : null);
+      setIsFetchReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (restoreTargetPage && restoreTargetPage !== currentPage) {
+      setCurrentPage(restoreTargetPage);
+    }
+  }, [restoreTargetPage, currentPage]);
+
+  useLayoutEffect(() => {
+    if (!restoreTargetId) {
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 30;
+    const interval = window.setInterval(() => {
+      const target = document.getElementById(`property-card-${restoreTargetId}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        sessionStorage.removeItem('restorePropertyId');
+        sessionStorage.removeItem('restorePropertyPage');
+        setRestoreTargetId(null);
+        setRestoreTargetPage(null);
+        window.clearInterval(interval);
+        return;
+      }
+
+      attempts += 1;
+      if (attempts >= maxAttempts) {
+        window.clearInterval(interval);
+      }
+    }, 120);
+
+    return () => window.clearInterval(interval);
+  }, [restoreTargetId, properties]);
   
   const handleFilterChange = (newFilters: PropertyFilters) => {
     setFilters(newFilters);
@@ -297,8 +361,17 @@ export function PropertyList({
             {properties.map((property) => (
               <PropertyCard
                 key={property._id}
+                cardId={`property-card-${property._id}`}
                 property={property}
-                onClick={() => onSelectProperty(property._id)}
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem('restorePropertyId', property._id);
+                    sessionStorage.setItem('restorePropertyPage', String(currentPage));
+                  } catch (error) {
+                    console.warn('Failed to store restore position', error);
+                  }
+                  onSelectProperty(property._id);
+                }}
               />
             ))}
           </div>

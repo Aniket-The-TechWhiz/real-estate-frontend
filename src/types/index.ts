@@ -48,7 +48,7 @@ export interface Property {
 export function formatPrice(price: number, listingType: 'Rent' | 'Sale'): string {
   const formatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
   }).format(price);
   
