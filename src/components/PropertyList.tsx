@@ -178,8 +178,11 @@ export function PropertyList({
   };
 
   useEffect(() => {
+    if (!restoreTargetId) {
+      return;
+    }
     const section = document.getElementById('properties-section');
-    if (section && !restoreTargetId) {
+    if (section) {
       window.requestAnimationFrame(() => {
         section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
